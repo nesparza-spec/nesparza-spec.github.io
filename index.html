@@ -354,5 +354,65 @@
       <p>Built from public profile details · Free static site</p>
     </footer>
   </div>
+  <!-- Single-event website tags: rfweh (Try X Ads Now), rfwei (X profile links). -->
+  <script>
+    (function () {
+      var ADS_TAG = "rfweh";
+      var PROFILE_TAG = "rfwei";
+
+      function fireSingleEventTag(tagId) {
+        var payload = { tw_sale_amount: 0, tw_order_quantity: 0 };
+        try {
+          if (window.twttr && twttr.conversion && typeof twttr.conversion.trackPid === "function") {
+            twttr.conversion.trackPid(tagId, payload);
+          }
+        } catch (err) {}
+
+        try {
+          if (typeof window.twq === "function") {
+            window.twq("event", "tw-" + tagId);
+          }
+        } catch (err) {}
+
+        var query = "txn_id=" + encodeURIComponent(tagId) + "&p_id=Twitter&tw_sale_amount=0&tw_order_quantity=0";
+        var urls = [
+          "https://analytics.twitter.com/i/adsct?" + query,
+          "https://t.co/i/adsct?" + query
+        ];
+        for (var i = 0; i < urls.length; i++) {
+          var sent = false;
+          try {
+            if (typeof navigator.sendBeacon === "function") {
+              sent = navigator.sendBeacon(urls[i]);
+            }
+          } catch (err) {
+            sent = false;
+          }
+          if (!sent) {
+            var img = new Image();
+            img.src = urls[i];
+          }
+        }
+      }
+
+      function normalizedHref(anchor) {
+        return (anchor.getAttribute("href") || "").split("#")[0].split("?")[0].replace(/\/$/, "");
+      }
+
+      document.addEventListener("click", function (event) {
+        var target = event.target;
+        var link = target && target.closest ? target.closest("a") : null;
+        if (!link) return;
+        var href = normalizedHref(link);
+        if (link.classList.contains("x-ads") && href === "https://ads.x.com") {
+          fireSingleEventTag(ADS_TAG);
+          return;
+        }
+        if (href === "https://x.com/Nate_Esparza") {
+          fireSingleEventTag(PROFILE_TAG);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
